@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriScan PH - Filipino Food Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; }
+    </style>
+</head>
+<body class="bg-green-50 text-gray-800">
+
+    <!-- NAVBAR -->
+    <nav class="fixed w-full z-50 top-0 bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <span class="text-2xl font-bold text-green-600">NutriScan<span class="text-gray-800">PH</span></span>
+            <div class="flex gap-4">
+                <a href="#home" class="hover:text-green-600">Home</a>
+                <a href="#database" class="hover:text-green-600">Food List</a>
+                <button class="bg-green-600 text-white px-4 py-2 rounded-full">Download</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="home" class="pt-28 pb-16 px-4 text-center bg-gradient-to-b from-green-100 to-white">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Alam Mo Ba? <span class="text-green-600">Niluluwas ng Pagkain mo?</span></h1>
+        <p class="text-lg text-gray-600 mb-8">The first nutrition tracker for Filipino taste buds.</p>
+        
+        <!-- SEARCH INPUT -->
+        <div class="max-w-md mx-auto flex gap-2">
+            <input type="text" id="heroInput" placeholder="Halimbawa: Adobo, Sinigang..." class="w-full p-3 border rounded-lg">
+            <button onclick="searchFromHero()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-bold">Search</button>
+        </div>
+        
+        <div class="mt-4 text-sm text-gray-500">
+            Trending: <span onclick="searchTrending('Sinigang')" class="text-green-600 cursor-pointer hover:underline">#Sinigang</span>
+            <span onclick="searchTrending('Halo-Halo')" class="text-green-600 cursor-pointer hover:underline ml-2">#HaloHalo</span>
+            <span onclick="searchTrending('Pandesal')" class="text-green-600 cursor-pointer hover:underline ml-2">#Pandesal</span>
+        </div>
+    </section>
+
+    <!-- DATABASE SECTION -->
+    <section id="database" class="py-16 px-4 bg-green-50">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8">Filipino Food Database</h2>
+            
+            <!-- SEARCH IN TABLE -->
+            <input type="text" id="dbSearch" onkeyup="searchTable()" placeholder="Search food..." class="w-full p-3 border rounded-lg mb-6">
+            
+            <!-- RESULTS -->
+            <div id="results" class="bg-white rounded-lg shadow overflow-hidden">
+                <!-- Table generates here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-green-900 text-white py-8 text-center">
+        <p>© 2024 NutriScan PH - Masustansya ang buhay mo!</p>
+    </footer>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // DATABASE
+        const foods = [
+            { name: "Adobo (Chicken)", size: "1 cup", cal: 310, pro: 28, carb: 8 },
+            { name: "Adobo (Pork)", size: "1 cup", cal: 410, pro: 22, carb: 6 },
+            { name: "Sinigang na Baboy", size: "1 cup", cal: 180, pro: 15, carb: 12 },
+            { name: "Sinigang na Isda", size: "1 cup", cal: 150, pro: 18, carb: 8 },
+            { name: "Lechon Kawali", size: "3 slices", cal: 450, pro: 18, carb: 0 },
+            { name: "Kare-Kare", size: "1 cup", cal: 350, pro: 20, carb: 15 },
+            { name: "Pinakbet", size: "1 cup", cal: 120, pro: 4, carb: 14 },
+            { name: "Pancit Canton", size: "1 cup", cal: 300, pro: 9, carb: 45 },
+            { name: "Tinolang Isda", size: "1 bowl", cal: 120, pro: 20, carb: 5 },
+            { name: "Pandesal", size: "1 piece", cal: 90, pro: 3, carb: 15 },
+            { name: "Puto", size: "2 pieces", cal: 140, pro: 4, carb: 20 },
+            { name: "Bibingka", size: "1 slice", cal: 220, pro: 5, carb: 30 },
+            { name: "Halo-Halo", size: "1 cup", cal: 300, pro: 4, carb: 60 },
+            { name: "Turon", size: "1 piece", cal: 250, pro: 2, carb: 35 },
+            { name: "Taho", size: "1 cup", cal: 180, pro: 9, carb: 22 },
+            { name: "Biko", size: "1 piece", cal: 200, pro: 3, carb: 40 },
+            { name: "Kutsinta", size: "2 pieces", cal: 160, pro: 2, carb: 28 },
+            { name: "Sago at Gulaman", size: "1 cup", cal: 100, pro: 0, carb: 25 },
+            { name: "Buko Juice", size: "1 cup", cal: 80, pro: 2, carb: 18 },
+            { name: "Empanada", size: "1 piece", cal: 280, pro: 6, carb: 30 }
+        ];
+
+        // LOAD ON START
+        window.onload = function() {
+            displayFoods(foods);
+        };
+
+        // DISPLAY FOODS
+        function displayFoods(data) {
+            let html = '<table class="w-full text-left"><thead class="bg-green-100"><tr><th class="p-3">Food</th><th class="p-3">Serving</th><th class="p-3">Cal</th><th class="p-3">Protein</th><th class="p-3">Carbs</th></tr></thead><tbody>';
+            
+            data.forEach(food => {
+                html += '<tr class="border-t hover:bg-gray-50"><td class="p-3 font-medium">' + food.name + '</td><td class="p-3">' + food.size + '</td><td class="p-3">' + food.cal + '</td><td class="p-3">' + food.pro + 'g</td><td class="p-3">' + food.carb + 'g</td></tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('results').innerHTML = html;
+        }
+
+        // SEARCH FROM HERO
+        function searchFromHero() {
+            let query = document.getElementById('heroInput').value.toLowerCase();
+            let filtered = foods.filter(f => f.name.toLowerCase().includes(query));
+            displayFoods(filtered);
+            document.getElementById('database').scrollIntoView({behavior: 'smooth'});
+        }
+
+        // SEARCH TRENDING
+        function searchTrending(term) {
+            document.getElementById('heroInput').value = term;
+            searchFromHero();
+        }
+
+        // SEARCH IN TABLE
+        function searchTable() {
+            let query = document.getElementById('dbSearch').value.toLowerCase();
+            let filtered = foods.filter(f => f.name.toLowerCase().includes(query));
+            displayFoods(filtered);
+        }
+    </script>
+</body>
+</html>
